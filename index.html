@@ -30,6 +30,7 @@
           rel="stylesheet" type="text/css">
     <script type="text/javascript"
             src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 </head>
 
 <body>
@@ -43,13 +44,9 @@
                 <span class="icon-bar"></span>
             </a>
             <a class="brand" href="#">Education School Graduate Placement Demo</a>
-            <div class="navbar-search">
-                <select class="span2 filterselect" id="type">
-                    <option value="">Filter by Placement Type</option>
-                    <option value="Art">Art</option>
-                    <option value="High School">High School</option>
-                    <option value="Middle School">Middle School</option>
-                    <option value="University">University</option>
+            <div class="navbar-search" id="query_filters">
+                <select class="span2 filterselect" id="selection_type">
+                    <option value="All">All Types</option>
                 </select>
             </div>
             <!-- NOT IN USE AT THE MOMENT <div class="nav-collapse">
@@ -89,35 +86,70 @@
 <script src="../assets/js/bootstrap-carousel.js"></script>
 <script src="../assets/js/bootstrap-typeahead.js"></script>
 <script type="text/javascript">
-    function initialize() {
-        var tableId = 3429227;
-        var locationColumn = escape('PlacementAddress');
+    google.load('visualization', '1');
+    function initialize() {        
+
+        var table_info = {
+                          "Alumni":{                                        
+                            "table_id":"1nCBmKQt-Ze0ZnbPrlExpLpnZaCO2hoC2BIV_T5c",
+                            "location_column":"\'Address\'",
+                            "filter_column":"Program"},
+                          "Placements":{
+                            "table_id":"1OUTi8nwi5V7Yn7lY-HKRiB_GhdvH1i2J3wJ5v5A",
+                            "location_column":"\'Placement Address\'",
+                            "filter_column":"Program"},                                                       
+                          "Research":{
+                            "table_id":"1Z8K68y31x5SiVhGLOBrDCV1z1p-K4OiwFY1X2SU",
+                            "location_column":"\'Location\'",
+                            "filter_column":"Program"},
+                          "In The News":{
+                            "table_id":"1Fm4Q3FRLgN8eCjkkst5yDS01_5FtstoGb6E_Fbs",
+                            "location_column":"\'Location\'",
+                            "filter_column":"Program"}                                                 
+        };
+
 
         var map = new google.maps.Map(document.getElementById('map-canvas'), {
             center:new google.maps.LatLng(42.3875968, -71.0994968),
-            zoom:13,
+            zoom:2,
             mapTypeId:google.maps.MapTypeId.ROADMAP
         });
 
-        var layer = new google.maps.FusionTablesLayer({
-            query:{
-                select:locationColumn,
-                from:tableId
-            },
-            map:map
-        });
+        for (var key in table_info)
+        {
+            $('#selection_type').append($("<option></option>")
+                .attr("value",key)
+                .text(key)); 
+            table = table_info[key];
 
-        google.maps.event.addDomListener(document.getElementById('type'),
+            layer = new google.maps.FusionTablesLayer({
+                query:{
+                select:table.location_column,
+                from:table.table_id,
+                //where:"Program='M.A.T. Middle and High School'"
+                },
+                map:map
+            });
+            
+            table["layer"] = layer;
+            console.log(layer);
+        }
+  
+        google.maps.event.addDomListener(document.getElementById('selection_type'),
                 'change', function () {
-                    updateMap(layer, tableId, locationColumn);
+                    updateMap(table_info, map);
                 });
     }
 
     // Update the query sent to the Fusion Table Layer based on
     // the user selection in the select menu
-    function updateMap(layer, tableId, locationColumn) {
-        var type = document.getElementById('type').value;
-        if (type) {
+    function updateMap(table_info, map) {
+
+        var type = document.getElementById('selection_type').value;
+        //<select class="span2 filterselect" id="selection_type"></select>
+        //$('#query_filters').append("<select class=\"span2 filterselect\" id=\"program_type\"></select>");
+                
+        /*if (type) {
             layer.setOptions({
                 query:{
                     select:locationColumn,
@@ -132,6 +164,20 @@
                     from:tableId
                 }
             });
+        }*/
+
+        for (var key in table_info)
+        {
+            console.log(type);
+            console.log(key);
+            table = table_info[key];
+            console.log(table);
+            layer = table.layer;
+            if (type == key || type == "All")
+                layer.setMap(map);
+            else
+                layer.setMap(null);
+            
         }
     }
 
