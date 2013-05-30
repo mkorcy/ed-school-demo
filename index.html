@@ -87,6 +87,7 @@
 <script src="../assets/js/bootstrap-typeahead.js"></script>
 <script type="text/javascript">
     google.load('visualization', '1');
+    var lay = null;
     function initialize() {        
 
         var table_info = {
@@ -108,6 +109,24 @@
                             "filter_column":"Program"}                                                 
         };
 
+        var queryText = encodeURIComponent(
+            "SELECT Address FROM 1nCBmKQt-Ze0ZnbPrlExpLpnZaCO2hoC2BIV_T5c");
+        var query = new google.visualization.Query(
+            'http://www.google.com/fusiontables/gvizdata?tq='  + queryText);
+
+
+        query.send(function(response) {
+            console.log(response);
+            var numRows = response.getDataTable().getNumberOfRows();
+                var loc_str = response.getDataTable().getValue(0, 0);
+                alert (loc_str);
+          var tmp = loc_str.split(" ");
+          var lat = parseFloat(tmp[0]);
+          var lng = parseFloat(tmp[1]);
+          //alert(lat + " : " + lng);
+            //console.log(numRows);
+
+        });
 
         var map = new google.maps.Map(document.getElementById('map-canvas'), {
             center:new google.maps.LatLng(42.3875968, -71.0994968),
@@ -132,6 +151,7 @@
             });
             
             table["layer"] = layer;
+            lay = layer;
             console.log(layer);
         }
   
